@@ -330,17 +330,15 @@
             }
             updateBackupStats();
 
-            // Handle file selection via button
             selectFileBtn.addEventListener('click', () => fileInput.click());
 
-            // Handle file input change
+
             fileInput.addEventListener('change', (e) => {
                 if (e.target.files.length) {
                     handleBackupUpload(e.target.files[0]);
                 }
             });
 
-            // Handle drag and drop
             ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
                 dropzone.addEventListener(eventName, preventDefaults, false);
             });
@@ -348,6 +346,108 @@
             function preventDefaults(e) {
                 e.preventDefault();
                 e.stopPropagation();
+            }
+
+            fileInput.setAttribute('accept', '.bak,.sql,.zip,.tar.gz,.png,.jpg,.jpeg');
+
+            function handleBackupUpload(file) {
+                const validImageTypes = ['image/png', 'image/jpeg'];
+                const isImage = validImageTypes.includes(file.type);
+
+                document.getElementById('backupName').textContent = file.name;
+                document.getElementById('backupDetails').textContent = `Type: ${file.type || 'Inconnu'}`;
+                document.getElementById('backupSize').textContent = formatFileSize(file.size);
+                document.getElementById('backupDate').textContent = new Date(file.lastModified).toLocaleString();
+
+                let backupType = 'Inconnu';
+                if (isImage) {
+                    backupType = 'Image';
+                } else {
+                    const extension = file.name.split('.').pop().toLowerCase();
+                    if (extension === 'bak') backupType = 'Sauvegarde SQL Server';
+                    else if (extension === 'sql') backupType = 'Dump SQL';
+                    else if (extension === 'zip') backupType = 'Archive ZIP';
+                    else if (extension === 'gz') backupType = 'Archive TAR.GZ';
+                }
+                document.getElementById('backupType').textContent = backupType;
+
+                previewContainer.classList.remove('hidden');
+                resultDetails.classList.add('hidden');
+                resultPlaceholder.classList.remove('hidden');
+
+                previewContainer.scrollIntoView({ behavior: 'smooth' });
+
+                setTimeout(() => {
+                    if (isImage) {
+                        analyzeImage(file);
+                    } else {
+                        analyzeBackup(file);
+                    }
+                }, 1500);
+            }
+
+            function analyzeImage(file) {
+                resultPlaceholder.classList.add('hidden');
+                resultDetails.classList.remove('hidden');
+
+                const integrityScore = 90 + Math.random() * 10; 
+                const encryptionScore = 0; 
+                const riskScore = Math.random() * 10; 
+
+                document.getElementById('integrityScore').textContent = integrityScore.toFixed(0) + '%';
+                document.getElementById('encryptionScore').textContent = encryptionScore.toFixed(0) + '%';
+                document.getElementById('riskScore').textContent = riskScore.toFixed(0) + '%';
+
+                document.getElementById('integrityBar').style.width = integrityScore + '%';
+                document.getElementById('encryptionBar').style.width = encryptionScore + '%';
+                document.getElementById('riskBar').style.width = riskScore + '%';
+
+                const isSafe = integrityScore > 85 && riskScore < 15;
+                const verdictElement = document.getElementById('finalVerdict');
+
+                if (isSafe) {
+                    verdictElement.textContent = '✅ Image conforme aux standards TECHNO E-SERVICE';
+                    verdictElement.className = 'text-lg font-bold p-3 rounded-lg text-center bg-green-100 text-green-800';
+                    saveBtn.classList.remove('hidden');
+                } else {
+                    verdictElement.textContent = '⚠️ Image nécessitant une vérification TECHNO E-SERVICE';
+                    verdictElement.className = 'text-lg font-bold p-3 rounded-lg text-center bg-yellow-100 text-yellow-800';
+                    saveBtn.classList.add('hidden');
+                }
+
+                saveBtn.onclick = function() {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const backupData = {
+                            name: file.name,
+                            size: file.size,
+                            type: file.type,
+                            lastModified: file.lastModified,
+                            src: e.target.result,
+                            analysis: {
+                                integrity: integrityScore,
+                                encryption: encryptionScore,
+                                risk: riskScore,
+                                isSafe: isSafe,
+                                date: new Date().toISOString()
+                            }
+                        };
+
+                        savedImages.push(backupData);
+                        localStorage.setItem('savedImages', JSON.stringify(savedImages));
+
+                        if (savedImages.length === 1) {
+                            noSavedImages.classList.add('hidden');
+                        }
+                        displaySavedImages();
+                        updateBackupStats();
+
+                        alert('Image sécurisée par TECHNO E-SERVICE avec succès!');
+
+                        document.querySelector('[data-tab="saved"]').click();
+                    };
+                    reader.readAsDataURL(file);
+                };
             }
 
             ['dragenter', 'dragover'].forEach(eventName => {
@@ -375,13 +475,11 @@
             });
 
             function handleBackupUpload(file) {
-                // Display file info
                 document.getElementById('backupName').textContent = file.name;
                 document.getElementById('backupDetails').textContent = `Type: ${file.type || 'Inconnu'}`;
                 document.getElementById('backupSize').textContent = formatFileSize(file.size);
                 document.getElementById('backupDate').textContent = new Date(file.lastModified).toLocaleString();
                 
-                // Determine backup type based on extension
                 const extension = file.name.split('.').pop().toLowerCase();
                 let backupType = 'Inconnu';
                 if (extension === 'bak') backupType = 'Sauvegarde SQL Server';
@@ -394,10 +492,8 @@
                 resultDetails.classList.add('hidden');
                 resultPlaceholder.classList.remove('hidden');
                 
-                // Scroll to preview
                 previewContainer.scrollIntoView({ behavior: 'smooth' });
                 
-                // Simulate backup analysis (in a real app, you would call an actual API)
                 setTimeout(() => {
                     analyzeBackup(file);
                 }, 1500);
@@ -412,29 +508,23 @@
             }
 
             function analyzeBackup(file) {
-                // In a real application, you would call an API here
-                // For this demo, we'll simulate API response with random values
                 
-                // Hide placeholder and show results
                 resultPlaceholder.classList.add('hidden');
                 resultDetails.classList.remove('hidden');
                 
-                // Generate random scores for demo purposes
-                const integrityScore = 80 + Math.random() * 20; // High integrity
-                const encryptionScore = Math.random() > 0.3 ? 70 + Math.random() * 30 : Math.random() * 40; // Usually encrypted
-                const riskScore = Math.random() * 30; // Usually low risk
                 
-                // Display scores
+                const integrityScore = 80 + Math.random() * 20; 
+                const encryptionScore = Math.random() > 0.3 ? 70 + Math.random() * 30 : Math.random() * 40; 
+                const riskScore = Math.random() * 30; 
+                
                 document.getElementById('integrityScore').textContent = integrityScore.toFixed(0) + '%';
                 document.getElementById('encryptionScore').textContent = encryptionScore.toFixed(0) + '%';
                 document.getElementById('riskScore').textContent = riskScore.toFixed(0) + '%';
                 
-                // Update progress bars
                 document.getElementById('integrityBar').style.width = integrityScore + '%';
                 document.getElementById('encryptionBar').style.width = encryptionScore + '%';
                 document.getElementById('riskBar').style.width = riskScore + '%';
                 
-                // Determine if backup is safe
                 const isSafe = integrityScore > 75 && encryptionScore > 50 && riskScore < 30;
                 const verdictElement = document.getElementById('finalVerdict');
                 
@@ -448,7 +538,6 @@
                     saveBtn.classList.add('hidden');
                 }
                 
-                // Save button handler
                 saveBtn.onclick = function() {
                     const reader = new FileReader();
                     reader.onload = function(e) {
@@ -470,17 +559,14 @@
                         savedImages.push(backupData);
                         localStorage.setItem('savedImages', JSON.stringify(savedImages));
                         
-                        // Update saved backups display
                         if (savedImages.length === 1) {
                             noSavedImages.classList.add('hidden');
                         }
                         displaySavedImages();
                         updateBackupStats();
                         
-                        // Show success message
                         alert('Sauvegarde sécurisée par TECHNO E-SERVICE avec succès!');
                         
-                        // Switch to saved backups tab
                         document.querySelector('[data-tab="saved"]').click();
                     };
                     reader.readAsDataURL(file);
@@ -545,7 +631,6 @@
                     savedImagesContainer.appendChild(card);
                 });
                 
-                // Add delete button handlers
                 document.querySelectorAll('.delete-btn').forEach(btn => {
                     btn.addEventListener('click', function() {
                         const index = parseInt(this.getAttribute('data-index'));
@@ -563,11 +648,9 @@
                     });
                 });
                 
-                // Add restore button handlers
                 document.querySelectorAll('.restore-btn').forEach(btn => {
                     btn.addEventListener('click', function() {
                         const index = parseInt(this.getAttribute('data-index'));
-                        // In a real app, this would trigger the restore process
                         alert(`Initiation de la restauration TECHNO E-SERVICE à partir de: ${savedImages[index].name}`);
                         document.querySelector('[data-tab="restore"]').click();
                     });
@@ -578,7 +661,6 @@
                 const count = savedImages.length;
                 backupStats.textContent = `${count} sauvegarde${count !== 1 ? 's' : ''} TECHNO E-SERVICE`;
                 
-                // Update restore tab with actual backups
                 const restoreOptions = document.getElementById('restoreOptions');
                 if (savedImages.length > 0) {
                     restoreOptions.innerHTML = savedImages.map((backup, index) => `
@@ -598,11 +680,9 @@
                         </div>
                     `).join('');
                     
-                    // Add restore button handlers
                     document.querySelectorAll('#restoreOptions .restore-btn').forEach(btn => {
                         btn.addEventListener('click', function() {
                             const index = parseInt(this.getAttribute('data-index'));
-                            // In a real app, this would trigger the restore process
                             alert(`Lancement de la restauration TECHNO E-SERVICE: ${savedImages[index].name}`);
                         });
                     });
