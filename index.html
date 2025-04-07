@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TECHNO E-SERVICE - Sauvegarde des Données</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .dropzone {
+            border: 2px dashed #4b5563;
+            transition: all 0.3s ease;
+        }
+        .dropzone.active {
+            border-color: #3b82f6;
+            background-color: rgba(59, 130, 246, 0.05);
+        }
+        .result-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .result-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .safe {
+            border-left: 5px solid #10b981;
+        }
+        .unsafe {
+            border-left: 5px solid #ef4444;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .header-gradient {
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+        }
+        .app-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .logo-icon {
+            background-color: #2563eb;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- En-tête avec logo TECHNO E-SERVICE -->
+        <header class="flex items-center justify-between mb-10">
+            <div class="app-logo">
+                <div class="logo-icon">TE</div>
+                <h1 class="text-2xl font-bold text-gray-800">TECHNO E-SERVICE</h1>
+            </div>
+            <div class="text-sm text-gray-500">
+                <i class="fas fa-shield-alt mr-1"></i>
+                Solution sécurisée de sauvegarde
+            </div>
+            <img src="siantou.jpg" alt="Logo" class="h-16 w-30 object-cover  border-2 border-blue-100">
+        </header>
+
+        <!-- Section principale avec le titre du projet -->
+        <div class="header-gradient text-white rounded-xl shadow-lg mb-10 p-6 text-center">
+            <h2 class="text-2xl font-bold mb-2">INFRASTRUCTURE DE SAUVEGARDE ET RESTAURATION</h2>
+            <p class="text-gray-100 max-w-3xl mx-auto">
+                Plateforme de gestion des sauvegardes critiques pour la continuité des activités
+            </p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-10">
+            <!-- Navigation par onglets -->
+            <div class="flex border-b border-gray-200">
+                <button class="tab-btn py-4 px-6 font-medium text-gray-600 hover:text-blue-500 focus:outline-none active" data-tab="analyze">
+                    <i class="fas fa-database mr-2"></i>Analyse des sauvegardes
+                </button>
+                <button class="tab-btn py-4 px-6 font-medium text-gray-600 hover:text-blue-500 focus:outline-none" data-tab="saved">
+                    <i class="fas fa-archive mr-2"></i>Archives sécurisées
+                </button>
+                <button class="tab-btn py-4 px-6 font-medium text-gray-600 hover:text-blue-500 focus:outline-none" data-tab="restore">
+                    <i class="fas fa-redo mr-2"></i>Restauration
+                </button>
+            </div>
+
+            <!-- Contenu des onglets -->
+            <div class="tab-content active p-6" id="analyze-tab">
+                <div class="max-w-3xl mx-auto">
+                    <div id="dropzone" class="dropzone rounded-lg p-12 text-center cursor-pointer mb-8">
+                        <div class="flex flex-col items-center justify-center">
+                            <div class="bg-blue-100 p-4 rounded-full mb-4">
+                                <i class="fas fa-database text-3xl text-blue-600"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold text-gray-700 mb-2">Déposez votre fichier de sauvegarde</h3>
+                            <p class="text-gray-500 mb-4">Formats supportés: .bak, .sql, .zip, .tar.gz</p>
+                            <input type="file" id="fileInput" class="hidden" accept=".bak,.sql,.zip,.tar.gz">
+                            <button id="selectFileBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition">
+                                <i class="fas fa-folder-open mr-2"></i>Parcourir les fichiers
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="previewContainer" class="hidden mb-8">
+                        <h3 class="text-lg font-medium text-gray-700 mb-4 flex items-center">
+                            <i class="fas fa-chart-bar text-blue-500 mr-2"></i>
+                            Analyse du fichier de sauvegarde
+                        </h3>
+                        <div class="flex flex-col md:flex-row gap-6">
+                            <div class="flex-1">
+                                <div class="bg-gray-50 p-6 rounded-lg shadow-md h-full">
+                                    <div class="flex items-center mb-4">
+                                        <div class="bg-blue-100 p-2 rounded-full mr-3">
+                                            <i class="fas fa-file-alt text-blue-600"></i>
+                                        </div>
+                                        <div>
+                                            <h4 id="backupName" class="font-medium text-gray-800">Fichier de sauvegarde</h4>
+                                            <p id="backupDetails" class="text-sm text-gray-500">Détails du fichier</p>
+                                        </div>
+                                    </div>
+                                    <div class="space-y-4">
+                                        <div>
+                                            <span class="block text-sm font-medium text-gray-700">Type de sauvegarde</span>
+                                            <span id="backupType" class="text-gray-900">-</span>
+                                        </div>
+                                        <div>
+                                            <span class="block text-sm font-medium text-gray-700">Date de création</span>
+                                            <span id="backupDate" class="text-gray-900">-</span>
+                                        </div>
+                                        <div>
+                                            <span class="block text-sm font-medium text-gray-700">Taille du fichier</span>
+                                            <span id="backupSize" class="text-gray-900">-</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex-1">
+                                <div id="analysisResult" class="bg-gray-50 p-6 rounded-lg">
+                                    <h4 class="text-lg font-medium text-gray-700 mb-4 flex items-center">
+                                        <i class="fas fa-shield-alt text-blue-500 mr-2"></i>
+                                        Analyse de sécurité
+                                    </h4>
+                                    <div id="resultPlaceholder" class="text-center py-8">
+                                        <i class="fas fa-spinner fa-spin text-blue-500 text-3xl mb-3"></i>
+                                        <p class="text-gray-600">Analyse en cours...</p>
+                                    </div>
+                                    <div id="resultDetails" class="hidden">
+                                        <div class="mb-4">
+                                            <div class="flex justify-between items-center mb-1">
+                                                <span class="font-medium">Intégrité des données</span>
+                                                <span id="integrityScore" class="font-bold"></span>
+                                            </div>
+                                            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                                <div id="integrityBar" class="bg-green-500 h-2.5 rounded-full"></div>
+                                            </div>
+                                        </div>
+                                        <div class="mb-4">
+                                            <div class="flex justify-between items-center mb-1">
+                                                <span class="font-medium">Chiffrement</span>
+                                                <span id="encryptionScore" class="font-bold"></span>
+                                            </div>
+                                            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                                <div id="encryptionBar" class="bg-blue-500 h-2.5 rounded-full"></div>
+                                            </div>
+                                        </div>
+                                        <div class="mb-4">
+                                            <div class="flex justify-between items-center mb-1">
+                                                <span class="font-medium">Risques détectés</span>
+                                                <span id="riskScore" class="font-bold"></span>
+                                            </div>
+                                            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                                <div id="riskBar" class="bg-red-500 h-2.5 rounded-full"></div>
+                                            </div>
+                                        </div>
+                                        <div class="mt-6">
+                                            <div id="finalVerdict" class="text-lg font-bold p-3 rounded-lg text-center"></div>
+                                        </div>
+                                        <button id="saveBtn" class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition flex items-center justify-center hidden">
+                                            <i class="fas fa-lock mr-2"></i>Sécuriser cette sauvegarde
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content p-6" id="saved-tab">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-medium text-gray-700 flex items-center">
+                        <i class="fas fa-database text-blue-500 mr-2"></i>
+                        Archives sécurisées TECHNO E-SERVICE
+                    </h3>
+                    <div class="text-sm text-gray-500 bg-blue-50 py-1 px-3 rounded-full">
+                        <i class="fas fa-hdd mr-1"></i>
+                        <span id="backupStats">0 sauvegardes</span>
+                    </div>
+                </div>
+                <div id="savedImagesContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="text-center py-12 text-gray-500" id="noSavedImages">
+                        <i class="fas fa-box-open text-4xl mb-4"></i>
+                        <p>Aucune sauvegarde archivée</p>
+                        <p class="text-sm mt-2">Utilisez l'onglet Analyse pour sécuriser vos premières sauvegardes</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content p-6" id="restore-tab">
+                <div class="max-w-3xl mx-auto">
+                    <h3 class="text-xl font-medium text-gray-700 mb-6 flex items-center">
+                        <i class="fas fa-redo text-blue-500 mr-2"></i>
+                        Restauration des données TECHNO E-SERVICE
+                    </h3>
+                    <div class="bg-gray-50 rounded-lg p-6 shadow-md mb-8">
+                        <div class="flex items-start mb-6">
+                            <div class="bg-blue-100 p-3 rounded-full mr-4">
+                                <i class="fas fa-cloud-download-alt text-blue-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-800 mb-2">Sélectionnez une sauvegarde à restaurer</h4>
+                                <p class="text-gray-600 text-sm">Choisissez parmi vos archives sécurisées TECHNO E-SERVICE</p>
+                            </div>
+                        </div>
+                        
+                        <div id="restoreOptions" class="space-y-4">
+                            <!-- Les options de restauration seront générées dynamiquement -->
+                        </div>
+                    </div>
+                    
+                    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-8">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-exclamation-triangle text-yellow-500 mt-1 mr-3"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-medium text-yellow-800">Procédure de restauration</h4>
+                                <p class="text-sm text-yellow-700">
+                                    La restauration écrasera les données actuelles. TECHNO E-SERVICE recommande de vérifier 
+                                    l'intégrité de la sauvegarde avant toute opération.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-blue-50 border-l-4 border-blue-400 p-4">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-info-circle text-blue-500 mt-1 mr-3"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-medium text-blue-800">Support TECHNO E-SERVICE</h4>
+                                <p class="text-sm text-blue-700">
+                                    Pour toute assistance technique concernant la restauration, contactez notre équipe 
+                                    au support@techno-eservice.com ou au +237 6 96 56 08 77.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pied de page -->
+        <footer class="mt-12 text-center text-gray-500 text-sm">
+            <div class="mb-2">
+                <span class="app-logo inline-flex">
+                    <div class="logo-icon">TE</div>
+                    <span class="font-medium">TECHNO E-SERVICE</span>
+                </span>
+            </div>
+            <p>Solution professionnelle de sauvegarde et restauration de données</p>
+            <p class="mt-1">© 20254  TECHNO E-SERVICE. Tous droits réservés.</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab switching functionality
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const tabId = button.getAttribute('data-tab');
+                    
+                    // Update active tab button
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    
+                    // Show corresponding tab content
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    document.getElementById(`${tabId}-tab`).classList.add('active');
+                });
+            });
+
+            // File selection and dropzone functionality
+            const dropzone = document.getElementById('dropzone');
+            const fileInput = document.getElementById('fileInput');
+            const selectFileBtn = document.getElementById('selectFileBtn');
+            const previewContainer = document.getElementById('previewContainer');
+            const resultPlaceholder = document.getElementById('resultPlaceholder');
+            const resultDetails = document.getElementById('resultDetails');
+            const saveBtn = document.getElementById('saveBtn');
+            const savedImagesContainer = document.getElementById('savedImagesContainer');
+            const noSavedImages = document.getElementById('noSavedImages');
+            const backupStats = document.getElementById('backupStats');
+
+            // Saved backups from localStorage
+            let savedImages = JSON.parse(localStorage.getItem('savedImages')) || [];
+
+            // Display saved backups if any
+            if (savedImages.length > 0) {
+                noSavedImages.classList.add('hidden');
+                displaySavedImages();
+            }
+            updateBackupStats();
+
+            // Handle file selection via button
+            selectFileBtn.addEventListener('click', () => fileInput.click());
+
+            // Handle file input change
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length) {
+                    handleBackupUpload(e.target.files[0]);
+                }
+            });
+
+            // Handle drag and drop
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropzone.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropzone.addEventListener(eventName, highlight, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropzone.addEventListener(eventName, unhighlight, false);
+            });
+
+            function highlight() {
+                dropzone.classList.add('active');
+            }
+
+            function unhighlight() {
+                dropzone.classList.remove('active');
+            }
+
+            dropzone.addEventListener('drop', (e) => {
+                const dt = e.dataTransfer;
+                const file = dt.files[0];
+                if (file) {
+                    handleBackupUpload(file);
+                }
+            });
+
+            function handleBackupUpload(file) {
+                // Display file info
+                document.getElementById('backupName').textContent = file.name;
+                document.getElementById('backupDetails').textContent = `Type: ${file.type || 'Inconnu'}`;
+                document.getElementById('backupSize').textContent = formatFileSize(file.size);
+                document.getElementById('backupDate').textContent = new Date(file.lastModified).toLocaleString();
+                
+                // Determine backup type based on extension
+                const extension = file.name.split('.').pop().toLowerCase();
+                let backupType = 'Inconnu';
+                if (extension === 'bak') backupType = 'Sauvegarde SQL Server';
+                else if (extension === 'sql') backupType = 'Dump SQL';
+                else if (extension === 'zip') backupType = 'Archive ZIP';
+                else if (extension === 'gz') backupType = 'Archive TAR.GZ';
+                document.getElementById('backupType').textContent = backupType;
+                
+                previewContainer.classList.remove('hidden');
+                resultDetails.classList.add('hidden');
+                resultPlaceholder.classList.remove('hidden');
+                
+                // Scroll to preview
+                previewContainer.scrollIntoView({ behavior: 'smooth' });
+                
+                // Simulate backup analysis (in a real app, you would call an actual API)
+                setTimeout(() => {
+                    analyzeBackup(file);
+                }, 1500);
+            }
+
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+
+            function analyzeBackup(file) {
+                // In a real application, you would call an API here
+                // For this demo, we'll simulate API response with random values
+                
+                // Hide placeholder and show results
+                resultPlaceholder.classList.add('hidden');
+                resultDetails.classList.remove('hidden');
+                
+                // Generate random scores for demo purposes
+                const integrityScore = 80 + Math.random() * 20; // High integrity
+                const encryptionScore = Math.random() > 0.3 ? 70 + Math.random() * 30 : Math.random() * 40; // Usually encrypted
+                const riskScore = Math.random() * 30; // Usually low risk
+                
+                // Display scores
+                document.getElementById('integrityScore').textContent = integrityScore.toFixed(0) + '%';
+                document.getElementById('encryptionScore').textContent = encryptionScore.toFixed(0) + '%';
+                document.getElementById('riskScore').textContent = riskScore.toFixed(0) + '%';
+                
+                // Update progress bars
+                document.getElementById('integrityBar').style.width = integrityScore + '%';
+                document.getElementById('encryptionBar').style.width = encryptionScore + '%';
+                document.getElementById('riskBar').style.width = riskScore + '%';
+                
+                // Determine if backup is safe
+                const isSafe = integrityScore > 75 && encryptionScore > 50 && riskScore < 30;
+                const verdictElement = document.getElementById('finalVerdict');
+                
+                if (isSafe) {
+                    verdictElement.textContent = '✅ Sauvegarde conforme aux standards TECHNO E-SERVICE';
+                    verdictElement.className = 'text-lg font-bold p-3 rounded-lg text-center bg-green-100 text-green-800';
+                    saveBtn.classList.remove('hidden');
+                } else {
+                    verdictElement.textContent = '⚠️ Sauvegarde nécessitant une vérification TECHNO E-SERVICE';
+                    verdictElement.className = 'text-lg font-bold p-3 rounded-lg text-center bg-yellow-100 text-yellow-800';
+                    saveBtn.classList.add('hidden');
+                }
+                
+                // Save button handler
+                saveBtn.onclick = function() {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const backupData = {
+                            name: file.name,
+                            size: file.size,
+                            type: file.type,
+                            lastModified: file.lastModified,
+                            src: e.target.result,
+                            analysis: {
+                                integrity: integrityScore,
+                                encryption: encryptionScore,
+                                risk: riskScore,
+                                isSafe: isSafe,
+                                date: new Date().toISOString()
+                            }
+                        };
+                        
+                        savedImages.push(backupData);
+                        localStorage.setItem('savedImages', JSON.stringify(savedImages));
+                        
+                        // Update saved backups display
+                        if (savedImages.length === 1) {
+                            noSavedImages.classList.add('hidden');
+                        }
+                        displaySavedImages();
+                        updateBackupStats();
+                        
+                        // Show success message
+                        alert('Sauvegarde sécurisée par TECHNO E-SERVICE avec succès!');
+                        
+                        // Switch to saved backups tab
+                        document.querySelector('[data-tab="saved"]').click();
+                    };
+                    reader.readAsDataURL(file);
+                };
+            }
+
+            function displaySavedImages() {
+                savedImagesContainer.innerHTML = '';
+                
+                savedImages.forEach((backup, index) => {
+                    const card = document.createElement('div');
+                    card.className = `result-card bg-white rounded-lg shadow-md overflow-hidden ${backup.analysis.isSafe ? 'safe' : 'unsafe'}`;
+                    
+                    card.innerHTML = `
+                        <div class="p-4 border-b border-gray-200 bg-gray-50">
+                            <div class="flex items-center">
+                                <div class="bg-blue-100 p-2 rounded-full mr-3">
+                                    <i class="fas fa-database text-blue-600"></i>
+                                </div>
+                                <div class="truncate">
+                                    <h4 class="font-medium text-gray-800 truncate">${backup.name}</h4>
+                                    <p class="text-xs text-gray-500">${formatFileSize(backup.size)} • ${new Date(backup.lastModified).toLocaleDateString()}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-sm font-medium">${new Date(backup.analysis.date).toLocaleString()}</span>
+                                <span class="text-xs px-2 py-1 rounded ${backup.analysis.isSafe ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
+                                    ${backup.analysis.isSafe ? 'Sécurisé' : 'À vérifier'}
+                                </span>
+                            </div>
+                            <div class="text-sm mb-2">
+                                <span class="font-medium">Intégrité:</span> ${backup.analysis.integrity.toFixed(0)}%
+                                <div class="w-full bg-gray-200 rounded-full h-1.5 mt-1">
+                                    <div class="bg-green-500 h-1.5 rounded-full" style="width: ${backup.analysis.integrity}%"></div>
+                                </div>
+                            </div>
+                            <div class="text-sm mb-2">
+                                <span class="font-medium">Chiffrement:</span> ${backup.analysis.encryption.toFixed(0)}%
+                                <div class="w-full bg-gray-200 rounded-full h-1.5 mt-1">
+                                    <div class="bg-blue-500 h-1.5 rounded-full" style="width: ${backup.analysis.encryption}%"></div>
+                                </div>
+                            </div>
+                            <div class="text-sm mb-3">
+                                <span class="font-medium">Risques:</span> ${backup.analysis.risk.toFixed(0)}%
+                                <div class="w-full bg-gray-200 rounded-full h-1.5 mt-1">
+                                    <div class="bg-red-500 h-1.5 rounded-full" style="width: ${backup.analysis.risk}%"></div>
+                                </div>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button class="restore-btn flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-1 px-3 rounded transition" data-index="${index}">
+                                    <i class="fas fa-redo mr-1"></i> Restaurer
+                                </button>
+                                <button class="delete-btn bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm font-medium py-1 px-3 rounded transition" data-index="${index}">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    savedImagesContainer.appendChild(card);
+                });
+                
+                // Add delete button handlers
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const index = parseInt(this.getAttribute('data-index'));
+                        if (confirm('Voulez-vous vraiment supprimer cette sauvegarde TECHNO E-SERVICE?')) {
+                            savedImages.splice(index, 1);
+                            localStorage.setItem('savedImages', JSON.stringify(savedImages));
+                            
+                            if (savedImages.length === 0) {
+                                noSavedImages.classList.remove('hidden');
+                            }
+                            
+                            displaySavedImages();
+                            updateBackupStats();
+                        }
+                    });
+                });
+                
+                // Add restore button handlers
+                document.querySelectorAll('.restore-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const index = parseInt(this.getAttribute('data-index'));
+                        // In a real app, this would trigger the restore process
+                        alert(`Initiation de la restauration TECHNO E-SERVICE à partir de: ${savedImages[index].name}`);
+                        document.querySelector('[data-tab="restore"]').click();
+                    });
+                });
+            }
+            
+            function updateBackupStats() {
+                const count = savedImages.length;
+                backupStats.textContent = `${count} sauvegarde${count !== 1 ? 's' : ''} TECHNO E-SERVICE`;
+                
+                // Update restore tab with actual backups
+                const restoreOptions = document.getElementById('restoreOptions');
+                if (savedImages.length > 0) {
+                    restoreOptions.innerHTML = savedImages.map((backup, index) => `
+                        <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition">
+                            <div class="flex items-center truncate">
+                                <div class="bg-blue-100 p-2 rounded-full mr-3">
+                                    <i class="fas fa-database text-blue-600 text-sm"></i>
+                                </div>
+                                <div class="truncate">
+                                    <div class="truncate font-medium">${backup.name}</div>
+                                    <div class="text-xs text-gray-500 truncate">${formatFileSize(backup.size)} • ${new Date(backup.analysis.date).toLocaleDateString()}</div>
+                                </div>
+                            </div>
+                            <button class="restore-btn text-sm bg-blue-600 hover:bg-blue-700 text-white py-1 px-3 rounded flex items-center" data-index="${index}">
+                                <i class="fas fa-redo mr-1"></i> Restaurer
+                            </button>
+                        </div>
+                    `).join('');
+                    
+                    // Add restore button handlers
+                    document.querySelectorAll('#restoreOptions .restore-btn').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const index = parseInt(this.getAttribute('data-index'));
+                            // In a real app, this would trigger the restore process
+                            alert(`Lancement de la restauration TECHNO E-SERVICE: ${savedImages[index].name}`);
+                        });
+                    });
+                } else {
+                    restoreOptions.innerHTML = `
+                        <div class="text-center py-8 text-gray-500">
+                            <i class="fas fa-database text-3xl mb-3"></i>
+                            <p>Aucune sauvegarde disponible</p>
+                            <p class="text-sm mt-2">Analysez et sécurisez vos sauvegardes dans l'onglet approprié</p>
+                        </div>
+                    `;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
